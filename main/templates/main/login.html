@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+    <meta name="generator" content="Jekyll v3.8.5">
+
+    <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+
+    <style>
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+    </style>
+    <!-- Custom styles for this template -->
+    <link href="{% static 'css/signin.css' %}" rel="stylesheet" type="text/css">
+</head>
+<body>
+
+ <form class="form-signin"  action="{% url 'main:login' %}" method="post">
+     <div align="center">
+        <img class="mb-4" src="{% static 'css/login/logo.png' %}" alt="" width="150" height="150">
+     </div>
+  <h1 class="h3 mb-3 font-weight-normal">请登录</h1>
+
+     {% csrf_token %}
+ <!--
+  <label for="inputEmail" class="sr-only">电子邮箱</label>
+  <input name="email" type="email" id="email" class="form-control" placeholder="电子邮箱" required autofocus>
+  -->
+ <label for="inputEmail" class="sr-only">用户名</label>
+  <input name="username" type="text" id="inputEmail" class="form-control" placeholder="用户名" required autofocus>
+  <label for="inputPassword" class="sr-only">密码</label>
+  <input name="password" type="password" id="password" class="form-control" placeholder="密码" required>
+
+    {% if login_info == 1 %}
+     <div class="ececk_warning"><span>用户不存在</span></div>
+     {% elif login_info == 2 %}
+     <div class="ececk_warning"><span>密码错误</span></div>
+    {% endif %}
+     <div class="checkbox mb-3">
+        <label>
+        <input type="checkbox" value="remember-me"> 记住我
+        </label>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">登录</button>
+     </div>
+     <div class="form_reg_btn">
+         <span>还没有帐号？</span><a href="{%url 'main:register'%}">马上注册</a>
+     </div>
+</form>
+
+</body>
+</html>

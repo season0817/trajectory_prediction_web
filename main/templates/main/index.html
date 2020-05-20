@@ -1,0 +1,20 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% block content %}
+    <div class="width=100%;height=20px">
+        <img src="{% static '/image/world.topo.bathy.200401.jpg' %}" width="100%" height="250"></img>
+    </div>
+    <div class="row">
+        <div class="column side"></div>
+        <div class="column main">
+            <h3 align="center">探空仪轨迹预测与可视化系统</h3>
+            <p>  智能探空网络自适应调度管理系统利用多源数据，拟将多点探空仪、多点新型多通道探空通讯网关以及新型探空仪基测箱构成的综合决策网络，通过信息融合方法、系统决策模型及系统自适应方法，融合机器学习和数据挖掘等技术进行研究。探空仪运动轨迹预测子系统是智能探空网络自适应调度管理系统的核心部分。该系统根据历史数据，通过深度学习方法来预测探空仪在指定条件下的运动轨迹，为探空仪自适应调度提供支持。</p>
+            <ul>
+                <li>探空仪施放后轨迹预测和预测轨迹可视化展示</li>
+                <li>放球站数据管理</li>
+                <li>探空仪轨迹预测模型介绍</li>
+            </ul>
+        </div>
+        <div class="column side"></div>
+    </div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% block content %}
+    <div class="width=100%;height=20px">
+        <img src="{% static '/image/world.topo.bathy.200401.jpg' %}" width="100%" height="250"></img>
+    </div>
+    <div class="row">
+        <div class="column side"></div>
+        <div class="column main">
+            <h3 align="center">关于模型</h3>
+            <a>基于气象部门记录的2018年6月到2019年10月共1405次施放后探空仪数据，
+                保留温度、湿度、气压、南北向速度、东西向速度、垂直向速度、经度、纬度、海拔特征，
+                对原始数据进行每分钟取样一次，
+                选取施放后运动超过4h的探空仪数据记录，经过数据预处理后构建数据集，
+                搭建并训练GRU-GRU的Encoder-Decoder模型，模型如下图所示。
+                五折交叉验证下，MAE（平均绝对误差）=0.0198，MSE（均方误差）=0.0014。
+            </a>
+            <div class="width=50%;height=20px;" style="text-align: center">
+                <img src="{% static '/image/EncoderDecoder.png' %}" width="10%" style="margin: 0 auto"></img>
+            </div>
+        </div>
+        <div class="column side"></div>
+    </div>
+{% endblock %}

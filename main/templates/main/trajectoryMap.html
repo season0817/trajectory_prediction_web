@@ -1,0 +1,99 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% block content %}
+    <div class="row">
+        <div class="column side"></div>
+        <div class="column main">
+            <h3 align="center">轨迹预测及可视化</h3>
+            <hr>
+            <p>探空仪在接下来4小时内的轨迹如下图所示：</p>
+            <div id="container" style="width: 100%;height:500px;"></div>
+        </div>
+        <div class="column side"></div>
+    </div>
+    <script>
+        var route=[];
+        var routeMap=[]
+        var longitudes={{ longitudes|safe }};
+        var latitudes={{ latitudes|safe }};
+        var altitudes={{ altitudes|safe }};
+        var stationName="{{ stationName|safe }}";
+        console.log(stationName);
+        var stationLongitude={{ stationLongitude|safe }};
+        var stationLatitude={{ stationLatitude|safe }};
+        for(var i=0;i<longitudes.length;i++)
+        {
+            route.push([longitudes[i],latitudes[i],altitudes[i]]);
+            routeMap.push([longitudes[i],latitudes[i]]);
+        }
+
+        var map = new AMap.Map('container',{
+            center:[stationLongitude,stationLatitude],
+            //center: [116.306206, 39.975468],
+            zooms: [3, 13],
+		    zoom:10
+        });
+
+        var startmarker = new AMap.Marker({
+        position: new AMap.LngLat(stationLongitude, stationLatitude),   // 经纬度对象，如 new AMap.LngLat(116.39, 39.9); 也可以是经纬度构成的一维数组[116.39, 39.9]
+        label:{
+            offset: new AMap.Pixel(2, 2),
+            content:"放飞点",
+            direction:'bottom',
+            },
+        });
+        map.add(startmarker);
+        var endmarker = new AMap.Marker({
+        position: new AMap.LngLat(longitudes[240], latitudes[240]),   // 经纬度对象，如 new AMap.LngLat(116.39, 39.9); 也可以是经纬度构成的一维数组[116.39, 39.9]
+        label:{
+            offset: new AMap.Pixel(2, 2),
+            content:"4小时后到达处",
+            direction:'bottom',
+            },
+        });
+        map.add(endmarker);
+
+        AMapUI.load(['ui/misc/PathSimplifier', 'lib/$'], function(PathSimplifier, $) {
+        if (!PathSimplifier.supportCanvas) {
+            alert('当前环境不支持 Canvas！');
+            return;
+        }
+        var pathSimplifierIns = new PathSimplifier({
+            zIndex: 100,
+            autoSetFitView: false,
+            map: map, //所属的地图实例
+            getPath: function(pathData, pathIndex) {
+                return pathData.path;
+            },
+            getHoverTitle: function(pathData, pathIndex, pointIndex) {
+                if (pointIndex >= 0) {
+                    return '海拔：' + altitudes[pointIndex];
+                }
+                return pathData.name;
+            },
+            renderOptions: {
+                renderAllPointsIfNumberBelow: 100 //绘制路线节点，如不需要可设置为-1
+            }
+        });
+        window.pathSimplifierIns = pathSimplifierIns;
+        var myPath =routeMap,
+            endIdx = 0,
+            data = [{
+                name: '预测轨迹',
+                path: myPath.slice(0, 1)
+            }];
+        //pathSimplifierIns.setData(data);
+            pathSimplifierIns.setData([{
+                name:"预测轨迹",
+                path:routeMap
+            }])
+        //对第一条线路（即索引 0）创建一个巡航器
+        var navg1 = pathSimplifierIns.createPathNavigator(0, {
+            loop: true, //循环播放
+            speed: 1000 //巡航速度，单位千米/小时
+        });
+        navg1.start();
+
+    });
+    </script>
+{% endblock %}

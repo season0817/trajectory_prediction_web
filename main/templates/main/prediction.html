@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>预测-探空仪轨迹预测与数据分析平台</title>
+
+
+    <script type="text/javascript" src="https://assets.pyecharts.org/assets/echarts.min.js"></script>
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=c384ce96822e15f024eaeab9c810a51d"></script>
+    <script src="//webapi.amap.com/ui/1.0/main.js"></script>
+    <script type="text/javascript" src=" https://github.com/ecomfe/echarts-gl/tree/master/dist/echarts-gl.min.js"></script>
+    <script type="text/javascript" src="https://www.echartsjs.com/zh/dist/echarts-gl.js"></script>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <script src="https://cdn.bootcss.com/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
+    <link href="https://cdn.bootcss.com/magnific-popup.js/1.1.0/magnific-popup.css" rel="stylesheet">
+
+    <style>
+            * {
+              box-sizing: border-box;
+            }
+            body {
+              margin: 0;
+            }
+            /* 头部样式 */
+            .header {
+              background-color: #f1f1f1;
+              padding: 20px;
+              text-align: center;
+            }
+            /* 导航条 */
+            .topnav {
+              overflow: hidden;
+              background-color: #08a883;
+            }
+            /* 导航链接 */
+            .topnav a {
+              float: left;
+              display: block;
+              color: #f2f2f2;
+              text-align: center;
+              padding: 14px 16px;
+              text-decoration: none;
+            }
+            /* 链接 - 修改颜色 */
+            .topnav a:hover {
+              background-color: whitesmoke;
+              color: black;
+            }
+            /* 创建三个不相等的列 */
+            .column {
+              float: left;
+              padding: 10px;
+            }
+            /* 左右两侧宽度 */
+            .column.left {
+              width: 50%;
+                display: inline;
+            }
+            .column.right {
+              width: 50%;display: inline;
+
+            }
+            /* 列后面清除浮动 */
+            .row:after {
+              content: "";
+              display: table;
+              clear: both;
+            }
+            /* 响应式布局 - 宽度小于600px时设置上下布局 */
+            @media screen and (max-width: 600px) {
+              .column.side, .column.middle {
+                width: 100%;
+              }
+            }
+    </style>
+</head>
+<body>
+    <div>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color:#7386D5;">
+        <a class="navbar-brand" href="#">探空仪轨迹预测与数据分析平台</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                <a class="nav-item nav-link active" href="{% url 'main:index' %}">首页 <span class="sr-only">(current)</span></a>
+                <a class="nav-item nav-link active" href="{% url 'main:prediction' %}">预测</a>
+                <a class="nav-item nav-link active" href="{% url 'main:history' %}">历史</a>
+                <a class="nav-item nav-link active" href="{% url 'main:model' %}">模型</a>
+            </div>
+        </div>
+    </nav>
+</div>
+    <div class="row">
+        <div class="column left">
+            <div id="container" style="width: 100%;height:500px;"></div>
+            <!--<div id="trajectory3D" style="width: 100%;height: 250px;"></div>-->
+        </div>
+        <div class="column right">
+            <div id="longitudeInfo" style="width: 100%;height:180px;"></div>
+            <div id="latitudeInfo" style="width: 100%;height:180px;"></div>
+            <div id="altitudeInfo" style="width: 100%;height:180px;"></div>
+        </div>
+    </div>
+</body>
+</html>
+<script>
+    var route=[];
+    var routeMap=[]
+    var longitudes={{ longitude|safe }};
+    var latitudes={{ latitude|safe }};
+    var altitudes={{ altitude|safe }};
+    for(var i=0;i<longitudes.length;i++)
+    {
+        route.push([longitudes[i],latitudes[i],altitudes[i]]);
+        routeMap.push([longitudes[i],latitudes[i]]);
+    }
+
+    var map = new AMap.Map('container',{
+        center: [116.306206, 39.975468],
+        zooms: [3, 13],
+		zoom:4
+    });
+    AMapUI.load(['ui/misc/PathSimplifier', 'lib/$'], function(PathSimplifier, $) {
+        if (!PathSimplifier.supportCanvas) {
+            alert('当前环境不支持 Canvas！');
+            return;
+        }
+        var pathSimplifierIns = new PathSimplifier({
+            zIndex: 100,
+            autoSetFitView: false,
+            map: map, //所属的地图实例
+            getPath: function(pathData, pathIndex) {
+                return pathData.path;
+            },
+            getHoverTitle: function(pathData, pathIndex, pointIndex) {
+                if (pointIndex >= 0) {
+                    //point
+                    //return pathData.name + '，点：' + pointIndex + '/' + pathData.path.length;
+                    return pathData.name;
+                }
+                return pathData.name + '，点数量' + pathData.path.length;
+            },
+            renderOptions: {
+                renderAllPointsIfNumberBelow: 100 //绘制路线节点，如不需要可设置为-1
+            }
+        });
+        window.pathSimplifierIns = pathSimplifierIns;
+        var myPath =routeMap,
+            endIdx = 0,
+            data = [{
+                name: '动态路线',
+                path: myPath.slice(0, 1)
+            }];
+        pathSimplifierIns.setData(data);
+        //对第一条线路（即索引 0）创建一个巡航器
+        var navg1 = pathSimplifierIns.createPathNavigator(0, {
+            loop: true, //循环播放
+            speed: 1000 //巡航速度，单位千米/小时
+        });
+        function expandPath() {
+            function doExpand() {
+                endIdx++;
+                if (endIdx >= myPath.length) {
+                    return false;
+                }
+                var cursor = navg1.getCursor().clone(), //保存巡航器的位置
+                    status = navg1.getNaviStatus();
+                data[0].path = myPath.slice(0, endIdx + 1);
+                pathSimplifierIns.setData(data); //延展路径
+                //重新建立一个巡航器
+                navg1 = pathSimplifierIns.createPathNavigator(0, {
+                    //loop: true, //循环播放
+                    speed: 600000 //巡航速度，单位千米/小时
+                });
+                if (status !== 'stop') {
+                    navg1.start();
+                }
+                //恢复巡航器的位置
+                if (cursor.idx >= 0) {
+                    navg1.moveToPoint(cursor.idx, cursor.tail);
+                }
+                return true;
+            }
+            if (doExpand()) {
+                setTimeout(expandPath, 2100);
+            }
+        }
+        navg1.start();
+        expandPath();
+    });
+
+    var longitudeEchart=echarts.init(document.getElementById("longitudeInfo"));
+    var longitudeOption={
+        title:{
+            text:"经度"
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross',
+                label: {
+                    backgroundColor: '#283b56'
+                }
+            }
+        },
+        legend:{
+            data:["经度"]
+        },
+
+        dataZoom: {
+            show: false,
+            start: 0,
+            end: 100
+        },
+        xAxis:{
+            type: 'category',
+            boundaryGap: false,
+            data: (function (){
+                var now = new Date();
+                var res = [];
+                var len = 10;
+                while (len--) {
+                    res.unshift(now.toLocaleTimeString().replace(/^\D*/,''));
+                    now = new Date(now - 2000);
+                }
+                return res;
+            })()
+        },
+        yAxis:{
+            type: 'value',
+            scale: true,
+            boundaryGap: [0.2, 0.2]
+        },
+        series:[
+            {
+                name:"经度",
+                type:"line",
+                data:(function (){
+                var res = [];
+                var len = 10;
+                while (len--) {
+                    /*res.push(Math.round(Math.random() * 1000));*/
+                    res.push(longitudes.pop());
+                }
+                return res;
+            })()
+            },
+        ]
+    };
+    setInterval(function (){
+        axisData = (new Date()).toLocaleTimeString().replace(/^\D*/,'');
+        var data0 = longitudeOption.series[0].data;
+        data0.shift();
+        /*data0.push(Math.round(Math.random() * 1000));*/
+        data0.push(longitudes.pop())
+        longitudeOption.xAxis.data.shift();
+        longitudeOption.xAxis.data.push(axisData);
+        longitudeEchart.setOption(longitudeOption);
+    }, 2100);
+
+    var latitudeEchart=echarts.init(document.getElementById("latitudeInfo"));
+    var latitudeOption={
+        title:{
+            text:"纬度"
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross',
+                label: {
+                    backgroundColor: '#283b56'
+                }
+            }
+        },
+        legend:{
+            data:["经度"]
+        },
+
+        dataZoom: {
+            show: false,
+            start: 0,
+            end: 100
+        },
+        xAxis:{
+            type: 'category',
+            boundaryGap: false,
+            data: (function (){
+                var now = new Date();
+                var res = [];
+                var len = 10;
+                while (len--) {
+                    res.unshift(now.toLocaleTimeString().replace(/^\D*/,''));
+                    now = new Date(now - 2000);
+                }
+                return res;
+            })()
+        },
+        yAxis:{
+            type: 'value',
+            scale: true,
+            boundaryGap: [0.2, 0.2]
+        },
+        series:[
+            {
+                name:"纬度",
+                type:"line",
+                data:(function (){
+                var res = [];
+                var len = 10;
+                while (len--) {
+                    /*res.push(Math.round(Math.random() * 1000));*/
+                    res.push(latitudes.pop());
+                }
+                return res;
+            })()
+            },
+        ]
+    };
+    setInterval(function (){
+        axisData = (new Date()).toLocaleTimeString().replace(/^\D*/,'');
+        var data0 = latitudeOption.series[0].data;
+        data0.shift();
+        data0.push(latitudes.pop())
+        latitudeOption.xAxis.data.shift();
+        latitudeOption.xAxis.data.push(axisData);
+        latitudeEchart.setOption(latitudeOption);
+    }, 2100);
+
+    var altitudeEchart=echarts.init(document.getElementById("altitudeInfo"));
+    var altitudeOption={
+        title:{
+            text:"海拔"
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross',
+                label: {
+                    backgroundColor: '#283b56'
+                }
+            }
+        },
+        legend:{
+            data:["海拔"]
+        },
+
+        dataZoom: {
+            show: false,
+            start: 0,
+            end: 100
+        },
+        xAxis:{
+            type: 'category',
+            boundaryGap: false,
+            data: (function (){
+                var now = new Date();
+                var res = [];
+                var len = 10;
+                while (len--) {
+                    res.unshift(now.toLocaleTimeString().replace(/^\D*/,''));
+                    now = new Date(now - 2000);
+                }
+                return res;
+            })()
+        },
+        yAxis:{
+            type: 'value',
+            scale: true,
+            boundaryGap: [0.2, 0.2]
+        },
+        series:[
+            {
+                name:"海拔",
+                type:"line",
+                data:(function (){
+                var res = [];
+                var len = 10;
+                while (len--) {
+                    /*res.push(Math.round(Math.random() * 1000));*/
+                    res.push(altitudes.pop());
+                }
+                return res;
+            })()
+            },
+        ]
+    };
+    setInterval(function (){
+        axisData = (new Date()).toLocaleTimeString().replace(/^\D*/,'');
+        var data0 = altitudeOption.series[0].data;
+        data0.shift();
+        data0.push(altitudes.pop())
+        altitudeOption.xAxis.data.shift();
+        altitudeOption.xAxis.data.push(axisData);
+        altitudeEchart.setOption(altitudeOption);
+    }, 2100);
+    /*
+    var trajectory3DEcharts=echarts.init(document.getElementById("trajectory3D"));
+    var trajectory3DOption= {
+        tooltip: {},
+        backgroundColor: '#fff',
+        visualMap: {
+            show: false,
+            dimension: 2,
+            min: 0,
+            max: 30,
+            inRange: {
+                color: ['#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026']
+            }
+        },
+        xAxis3D: {
+            type: 'value'
+        },
+        yAxis3D: {
+            type: 'value'
+        },
+        zAxis3D: {
+            type: 'value'
+        },
+        grid3D: {
+            viewControl: {
+                projection: 'orthographic'
+            }
+        },
+        series: [{
+            type: 'line3D',
+           data:(function (){
+                var res = [];
+                var len = 10;
+                while (len--) {
+
+                    res.push(route.pop());
+                }
+                return res;})(),
+            lineStyle: {
+                width: 4
+            }
+        }]
+    };
+    setInterval(function (){
+        axisData = (new Date()).toLocaleTimeString().replace(/^\D*//*,'');
+        var data0 = trajectory3DOption.series[0].data;
+        data0.shift();
+
+        data0.push(route.pop());
+
+        trajectory3DEcharts.setOption(trajectory3DOption);
+    }, 2100);*/
+</script>

@@ -1,0 +1,247 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>历史-探空仪轨迹预测与数据分析平台</title>
+
+    <!--js-->
+    <script type="text/javascript" src="https://assets.pyecharts.org/assets/echarts.min.js"></script>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.js"></script>
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=c384ce96822e15f024eaeab9c810a51d"></script>
+
+    <script src="https://cdn.bootcss.com/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
+
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+
+    <!--css-->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+    <link href="https://cdn.bootcss.com/magnific-popup.js/1.1.0/magnific-popup.css" rel="stylesheet">
+
+    <style>
+            .column {
+              float: left;
+              padding: 10px;
+            }
+            /* 中间区域宽度 */
+            .column.main {
+              width: 80%;
+            }
+            /* 列后面清除浮动 */
+            .row:after {
+              content: "";
+              display: table;
+              clear: both;
+            }
+            /* 响应式布局 - 宽度小于600px时设置上下布局 */
+            @media screen and (max-width: 600px) {
+              .column.side, .column.middle {
+                width: 100%;
+              }
+            }
+            .wrapper {
+                display: flex;
+                width: 100%;
+                align-items: stretch;
+            }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #7386D5;margin: 0px">
+        <a class="navbar-brand" href="#">探空仪轨迹预测与数据分析平台</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                <a class="nav-item nav-link active" href="{% url 'main:index' %}">首页 <span class="sr-only">(current)</span></a>
+                <a class="nav-item nav-link active" href="{% url 'main:prediction' %}">预测</a>
+                <a class="nav-item nav-link active" href="{% url 'main:history' %}">历史</a>
+                <a class="nav-item nav-link active" href="{% url 'main:model' %}">模型</a>
+            </div>
+        </div>
+    </nav>
+    <div class="wrapper" style="margin: 0;padding: 0">
+        <!-- Sidebar Holder -->
+        <nav id="sidebar">
+            <ul class="list-unstyled components" style="background-color: #7386D5;">
+                <li class="active">
+                    <a href="{% url 'main:manageStation' %}">放球站管理</a>
+                </li>
+                <li class="active">
+                    <a href="{% url 'main:analyzeTrajectotyInfo' %}">探空仪运动分析</a>
+                </li>
+                <li class="active">
+                    <a href="{% url 'main:analyzeWeatherInfo' %}">气象数据统计</a>
+                </li>
+            </ul>
+        </nav>
+        <!-- Page Content Holder -->
+        <div class="column main">
+            <div id="weatherInfo" style="width: 100%;height:500px;"></div>
+            <div id="speedInfo" style="width: 100%;height:500px;"></div>
+            <div id="positionInfo" style="width: 100%;height:500px;"></div>
+        </div>
+    </div>
+</body>
+</html>
+<script type="text/javascript">
+    var weatherEchart=echarts.init(document.getElementById("weatherInfo"));
+    var weatherOption={
+        title:{
+            text:"高空气象数据展示"
+        },
+        tooltip:{},
+        legend:{
+            data:["温度","湿度","气压"]
+        },
+        dataZoom:[{
+            type: 'slider',
+            xAxisIndex: 0,
+            start: 10,
+            end: 60
+        }, {
+            type: 'inside',
+            xAxisIndex: 0,
+            start: 10,
+            end: 60
+        }],
+        xAxis:{
+            type:"category",
+            data:{{ xName|safe }}
+        },
+        yAxis:{
+            type:"value"
+        },
+        series:[
+            {
+                name:"温度",
+                type:"line",
+                data:{{ temperature|safe }}
+            },
+            {
+                name:"湿度",
+                type:"line",
+                data:{{ humid|safe }}
+
+            },
+            {
+                name:"气压",
+                type:"line",
+                data:{{ pressure|safe }}
+            }
+        ]
+    };
+
+    var speedEchart=echarts.init(document.getElementById("speedInfo"));
+    var speedOption={
+        title:{
+            text:"高空气象数据展示"
+        },
+        tooltip:{},
+        legend:{
+            data:["北向速度","东向速度","垂直速度"]
+        },
+        dataZoom:[{
+            type: 'slider',
+            xAxisIndex: 0,
+            start: 10,
+            end: 60
+        }, {
+            type: 'inside',
+            xAxisIndex: 0,
+            start: 10,
+            end: 60
+        }],
+        xAxis:{
+            type:"category",
+            data:{{ xName|safe }}
+        },
+        yAxis:{
+            type:"value"
+        },
+        series:[
+            {
+                name:"北向速度",
+                type:"line",
+                data:{{ nspeed|safe }}
+            },
+            {
+                name:"东向速度",
+                type:"line",
+                data:{{ espeed|safe }}
+
+            },
+            {
+                name:"垂直速度",
+                type:"line",
+                data:{{ uspeed|safe }}
+            }
+        ]};
+
+    var positionEchart=echarts.init(document.getElementById("positionInfo"));
+    var positionOption={
+        title:{
+            text:"高空气象数据展示"
+        },
+        tooltip:{},
+        legend:{
+            data:["经度","纬度","海拔"]
+        },
+        dataZoom:[{
+            type: 'slider',
+            xAxisIndex: 0,
+            start: 10,
+            end: 60
+        }, {
+            type: 'inside',
+            xAxisIndex: 0,
+            start: 10,
+            end: 60
+        }],
+        xAxis:{
+            type:"category",
+            data:{{ xName|safe }}
+        },
+        yAxis:{
+            type:"value"
+        },
+        series:[
+            {
+                name:"经度",
+                type:"line",
+                data:{{ longitude|safe }}
+            },
+            {
+                name:"纬度",
+                type:"line",
+                data:{{ latitude|safe }}
+
+            },
+            {
+                name:"海拔",
+                type:"line",
+                data:{{ altitude|safe }}
+            }
+        ]
+    }
+    weatherEchart.setOption(weatherOption);
+    speedEchart.setOption(speedOption);
+    positionEchart.setOption(positionOption);
+
+    $(document).ready(function () {
+                 $('#sidebarCollapse').on('click', function () {
+                     $('#sidebar').toggleClass('active');
+                 });
+             });
+</script>

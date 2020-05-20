@@ -1,0 +1,99 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% block content %}
+<div class="row">
+        <div class="column side"></div>
+        <div class="column main" style="vertical-align: middle;text-align: center">
+            <h3 align="center">轨迹预测及可视化</h3>
+            <hr>
+            <p>填写施放条件：放球站、施放海拔、天气情况、风速情况</p>
+            <form id="trajectoryForm" action="{% url 'main:trajectorySeries' %}" method="post" style="width: 60%;margin-left: 20%">
+                {% csrf_token %}
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="inputGroup-sizing-default">放球站</span>
+                    </div>
+                    <select name="stationId" class="form-control" id="exampleFormControlSelect1">
+                        {% for station in stations %}
+                            <option>{{ station.stationId }} {{ station.stationName }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="inputGroup-sizing-default">海拔</span>
+                        </div>
+                        <i class="fa fa-check" aria-hidden="true"></i>
+                        <input name="altitude" type="number" required="required" min="0" step="0.0001" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="inputGroup-sizing-default">气压</span>
+                        </div>
+                        <input name="pressure" type="number" required="required" step="0.0001" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="inputGroup-sizing-default">温度</span>
+                        </div>
+                        <input name="temperature" type="number"required="required" step="0.0001" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="inputGroup-sizing-default">湿度</span>
+                        </div>
+                        <input name="humid" type="number" required="required" step="0.0001" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="inputGroup-sizing-default">北向速度</span>
+                        </div>
+                        <input name="nspeed" type="number" required="required" step="0.0001" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="inputGroup-sizing-default">东向速度</span>
+                        </div>
+                        <input name="espeed" type="number" required="required" step="0.0001" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="inputGroup-sizing-default">垂直速度</span>
+                        </div>
+                        <input name="uspeed" type="number" required="required" step="0.0001" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">确定</button>
+                </div>
+            </form>
+        </div>
+        <div class="column side"></div>
+</div>
+    <script>
+     $(function () {
+         $('#trajectoryForm').bootstrapValidator({
+             message: 'This value is not valid',
+            //提供输入验证图标提示
+            feedbackIcons: {
+                valid: 'fa fa-check',
+                invalid: 'fa fa-times',
+                validating: 'fa fa-refresh'
+            },
+         })
+     });
+    </script>
+{% endblock %}

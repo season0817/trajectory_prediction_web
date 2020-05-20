@@ -1,0 +1,126 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+    <div class="row">
+        <div class="column side"></div>
+        <div class="column main">
+            <h3 align="center">放球站管理</h3>
+            <hr>
+            <div id="stationMap">
+                <h5 style="color: black;">放球站分布</h5>
+                <div id="container" style="width: 100%;height:400px;margin-bottom: 4px">
+                </div>
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" style="float: right">
+                    添加放球站
+                </button>
+            <form action="{% url 'main:addStation' %}" method="post">
+                {% csrf_token %}
+                 <!-- Modal -->
+            <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">添加放球站</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                                </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="inputGroup-sizing-default">放球站ID</span>
+                                </div>
+                                <input name="stationId" type="number" required="required" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="inputGroup-sizing-default">放球站名</span>
+                                </div>
+                                <input name="stationName" type="text" required="required" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="inputGroup-sizing-default">海拔</span>
+                                </div>
+                                <input name="altitude" type="number" required="required" min="0" step="0.0001" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="inputGroup-sizing-default">经度</span>
+                                </div>
+                                <input name="longitude" type="number" required="required" min="0" step="0.0001" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="inputGroup-sizing-default">纬度</span>
+                                </div>
+                                <input name="latitude" type="number" required="required" min="0" step="0.0001" class="form-control" aria-label="Sizing example input"
+                                       aria-describedby="inputGroup-sizing-default">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                            <button type="submit" class="btn btn-primary">添加</button>
+                        </div>
+                    </div>
+                  </div>
+            </div>
+            </form>
+            </div>
+
+            <br>
+            <div id="stationInfo">
+                <h5>放球站信息</h5>
+                <table data-toggle="table" data-search="true" class="table">
+                    <thead>
+                        <tr>
+                            <th>放球站ID</th>
+                            <th>放球站名</th>
+                            <th>经度</th>
+                            <th>纬度</th>
+                            <th>海拔</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for station in stations %}
+                        <tr id="tr-id-1" class="tr-class-1" data-title="bootstrap table" data-object='{"key": "value"}'>
+                            <td>{{ station.stationId }}</td>
+                            <td>{{ station.stationName }}</td>
+                            <td>{{ station.longitude }}</td>
+                            <td>{{ station.latitude }}</td>
+                            <td>{{ station.altitude }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="column side"></div>
+    </div>
+
+
+
+<script type="text/javascript">
+
+    var map = new AMap.Map('container',{
+        center: [112.7800, 28.0100],
+        zooms: [3, 13],
+		zoom:5
+    });
+    var stationNames={{ name|safe }};
+    var longitude={{ longitude|safe }};
+    var latitude={{ latitude|safe }};
+    var altitude={{ altitude|safe }};
+    for(var i=0;i<stationNames.length;i++)
+    {
+        var marker = new AMap.Marker({
+        position: new AMap.LngLat(longitude[i], latitude[i]),   // 经纬度对象，如 new AMap.LngLat(116.39, 39.9); 也可以是经纬度构成的一维数组[116.39, 39.9]
+        label:{
+            offset: new AMap.Pixel(2, 2),
+            content:stationNames[i],
+            direction:'bottom',
+            },
+        });
+        map.add(marker);
+    }
+</script>
+{% endblock %}

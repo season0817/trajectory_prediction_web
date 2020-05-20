@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <title>探空仪轨迹预测与可视化系统</title>
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=c384ce96822e15f024eaeab9c810a51d"></script>
+    <script src="//webapi.amap.com/ui/1.0/main.js"></script>
+    <script src="{% static '/js/jquery-3.3.1.js' %}"></script>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdn.bootcss.com/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap-validator/0.5.3/js/bootstrapValidator.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap-validator/0.5.3/js/language/zh_CN.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+    <link href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css" rel="stylesheet">
+    <link href="{% static '/css/font-awesome.css' %}">
+    <link href="https://cdn.bootcss.com/magnific-popup.js/1.1.0/magnific-popup.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/bootstrap-validator/0.5.3/css/bootstrapValidator.css" rel="stylesheet">
+    <style>
+
+            * {
+              box-sizing: border-box;
+            }
+            body {
+              margin: 0;
+            }
+            /* 头部样式 */
+            .header {
+              background-color: #f1f1f1;
+              padding: 20px;
+              text-align: center;
+            }
+            /* 导航条 */
+            .topnav {
+              overflow: hidden;
+              background-color: #08a883;
+            }
+            /* 导航链接 */
+            .topnav a {
+              float: left;
+              display: block;
+              color: #f2f2f2;
+              text-align: center;
+              padding: 14px 16px;
+              text-decoration: none;
+            }
+            /* 链接 - 修改颜色 */
+            .topnav a:hover {
+              background-color: whitesmoke;
+              color: black;
+            }
+            /* 创建三个不相等的列 */
+            .column {
+              float: left;
+              padding: 10px;
+            }
+            /* 左右两侧宽度 */
+            .column.side {
+              width: 10%;
+
+            }
+            /* 中间区域宽度 */
+            .column.main {
+              width: 80%;
+                box-shadow:15px 0 15px -15px #000,
+             -15px 0 15px -15px #000;
+            }
+            /* 列后面清除浮动 */
+            .row:after {
+              content: "";
+              display: table;
+              clear: both;
+            }
+            /* 响应式布局 - 宽度小于600px时设置上下布局 */
+            @media screen and (max-width: 600px) {
+              .column.side, .column.middle {
+                width: 100%;
+              }
+            }
+    </style>
+</head>
+<body>
+<div>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #7386D5;">
+        <a class="navbar-brand" href="#">探空仪轨迹预测与可视化系统</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                <a class="nav-item nav-link active" href="{% url 'main:index' %}">首页 <span class="sr-only">(current)</span></a>
+                <a class="nav-item nav-link active" href="{% url 'main:prediction' %}">轨迹预测</a>
+                <!--<a class="nav-item nav-link active" href="{% url 'main:history' %}">数据管理</a>-->
+                <a class="nav-item nav-link active" href="{% url 'main:manageStation' %}">放球站管理</a>
+                <a class="nav-item nav-link active" href="{% url 'main:model' %}">关于模型</a>
+                {% if user.is_active == False  %}
+
+                    <a class="nav-item nav-link active"  style="margin-left: 480px" href="{%url 'main:login'%}">登录</a>
+                    <a class="nav-item nav-link active"  href="#">/</a>
+                    <a class="nav-item nav-link active"  href="{%url 'main:register'%}">注册</a>
+                {% else %}
+                    <a class="nav-item nav-link active" style="margin-left: 480px" href="{% url 'main:logout' %}"> 你好,{{ user.username}} /  登出</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+</div>
+{% block content %}
+{% endblock %}
+</body>
+</html>
