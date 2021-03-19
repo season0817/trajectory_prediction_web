@@ -6,7 +6,7 @@ colorama==0.3.9
 cycler==0.10.0
 decorator==4.1.2
 Django==2.1.2
-djangorestframework==3.11.0
+djangorestframework==3.11.2
 h5py==2.10.0
 html5lib==0.9999999
 httpie==2.0.0
