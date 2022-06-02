@@ -8,7 +8,7 @@ decorator==4.1.2
 Django==2.1.2
 djangorestframework==3.11.0
 h5py==2.10.0
-html5lib==0.9999999
+html5lib==0.99999999
 httpie==2.0.0
 idna==2.9
 ipykernel==4.6.1
